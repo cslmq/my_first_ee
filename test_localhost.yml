@@ -1,38 +1,38 @@
----
-- name: List S3 Buckets with Pre-Attached IAM Role
-  hosts: localhost
-  gather_facts: no
-
-  vars:
-    s3_region: "ap-southeast-1" # Update with your region
-
-  tasks:
-    - name: List all S3 buckets
-      amazon.aws.aws_s3:
-        mode: list
-        region: "{{ s3_region }}"
-      register: s3_buckets
-
-    - name: Print the S3 bucket list
-      debug:
-        msg: "{{ s3_buckets.buckets }}"
----
-# - name: Hello World Sample
+# ---
+# - name: List S3 Buckets with Pre-Attached IAM Role
 #   hosts: localhost
+#   gather_facts: no
+
+#   vars:
+#     s3_region: "ap-southeast-1" # Update with your region
 
 #   tasks:
-#     - name: Get current user
-#       command: whoami
-#       register: whoami_output
+#     - name: List all S3 buckets
+#       amazon.aws.aws_s3:
+#         mode: list
+#         region: "{{ s3_region }}"
+#       register: s3_buckets
 
-#     - name: Print whoami output
+#     - name: Print the S3 bucket list
 #       debug:
-#         msg: "Current user is: {{ whoami_output.stdout }}"
+#         msg: "{{ s3_buckets.buckets }}"
+---
+- name: Hello World Sample
+  hosts: localhost
 
-#     - name: Hello Message
-#       debug:
-#         msg: "Hello World!"
+  tasks:
+    - name: Get current user
+      command: whoami
+      register: whoami_output
 
-#     - name: Sleep for 1 minute
-#       pause:
-#         seconds: 60
+    - name: Print whoami output
+      debug:
+        msg: "Current user is: {{ whoami_output.stdout }}"
+
+    - name: Hello Message
+      debug:
+        msg: "Hello World!"
+
+    - name: Sleep for 1 minute
+      pause:
+        seconds: 60

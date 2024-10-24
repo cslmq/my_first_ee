@@ -8,8 +8,7 @@
 
   tasks:
     - name: List all S3 buckets
-      amazon.aws.aws_s3:
-        mode: list
+      amazon.aws.aws_s3_bucket_info:
         region: "{{ s3_region }}"
       register: s3_buckets
 

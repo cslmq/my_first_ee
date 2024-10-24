@@ -1,0 +1,16 @@
+---
+- name: Retrieve Kubernetes Cluster Information
+  hosts: localhost
+  gather_facts: no
+  # vars:
+  #   kubeconfig_path: "~/.kube/config" # Update with your kubeconfig path if necessary
+
+  tasks:
+    - name: Get Kubernetes Cluster Info
+      community.kubernetes.k8s_cluster_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: cluster_info
+
+    - name: Display Kubernetes Cluster Info
+      debug:
+        var: cluster_info

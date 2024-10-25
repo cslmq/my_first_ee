@@ -2,10 +2,19 @@
 - name: Retrieve and Print Kubernetes Cluster Information
   hosts: localhost
   gather_facts: no
+  vars:
+    kubeconfig_content: "{{ lookup('env', 'KUBECONFIG_CONTENT') }}" # Replace with your actual kubeconfig content or variable.
 
   tasks:
+    - name: Save kubeconfig to a temporary file
+      copy:
+        content: "{{ kubeconfig_content }}"
+        dest: "/tmp/kubeconfig"
+        mode: 0600
+
     - name: Get Kubernetes Cluster Info
       kubernetes.core.k8s_cluster_info:
+        kubeconfig: "/tmp/kubeconfig"
       register: cluster_info
 
     - name: Print the Kubernetes Cluster Info

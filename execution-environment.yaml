@@ -12,7 +12,8 @@ dependencies:
   system:
     - openssh-clients
     - sshpass
+    - awscli
   galaxy:
     collections:
-      # - name: amazon.aws
-      - name: community.postgresql
+      - name: amazon.aws
+      - name: kubenetes.core

@@ -11,6 +11,15 @@
     #   debug:
     #     var: kubeconfig_content
 
+    - name: Verify AWS CLI availability
+      command: aws --version
+      register: aws_version_check
+      ignore_errors: yes
+
+    - name: Display AWS CLI version
+      debug:
+        var: aws_version_check.stdout
+
     - name: Save kubeconfig to a temporary file
       copy:
         content: "{{ kubeconfig_content }}"

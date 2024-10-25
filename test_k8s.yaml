@@ -3,7 +3,8 @@
   hosts: localhost
   gather_facts: no
   vars:
-    kubeconfig_content: "{{ lookup('env', 'KUBECONFIG_CONTENT') }}" # Replace with your actual kubeconfig content or variable.
+    # kubeconfig_content: "{{ lookup('env', 'KUBECONFIG_CONTENT') }}" # Replace with your actual kubeconfig content or variable.
+    kubeconfig_content: "{{ KUBECONFIG_CONTENT }}"
 
   tasks:
     - name: Debug KUBECONFIG_CONTENT variable

@@ -29,6 +29,15 @@
       debug:
         var: aws_identity.stdout
 
+    - name: Get EKS authentication token
+      command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1
+      register: eks_token_check
+      ignore_errors: yes
+
+    - name: Show EKS authentication token
+      debug:
+        var: eks_token_check.stdout
+
     - name: Save kubeconfig to a temporary file
       copy:
         content: "{{ kubeconfig_content }}"

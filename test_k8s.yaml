@@ -20,6 +20,15 @@
       debug:
         var: aws_version_check.stdout
 
+    - name: Test AWS credentials
+      command: aws sts get-caller-identity
+      register: aws_identity
+      ignore_errors: yes
+
+    - name: Show AWS identity
+      debug:
+        var: aws_identity.stdout
+
     - name: Save kubeconfig to a temporary file
       copy:
         content: "{{ kubeconfig_content }}"

@@ -6,6 +6,10 @@
     kubeconfig_content: "{{ lookup('env', 'KUBECONFIG_CONTENT') }}" # Replace with your actual kubeconfig content or variable.
 
   tasks:
+    - name: Debug KUBECONFIG_CONTENT variable
+      debug:
+        var: kubeconfig_content
+
     - name: Save kubeconfig to a temporary file
       copy:
         content: "{{ kubeconfig_content }}"

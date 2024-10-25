@@ -2,51 +2,43 @@
 - name: Retrieve and Print Kubernetes Cluster Information
   hosts: localhost
   gather_facts: no
-  vars:
-    # kubeconfig_content: "{{ lookup('env', 'KUBECONFIG_CONTENT') }}" # Replace with your actual kubeconfig content or variable.
-    kubeconfig_content: "{{ KUBECONFIG_CONTENT }}"
 
   tasks:
-    # - name: Debug KUBECONFIG_CONTENT variable
-    #   debug:
-    #     var: kubeconfig_content
+    - name: Generate EKS authentication token
+      command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json
+      register: eks_token_json
 
-    - name: Verify AWS CLI availability
-      command: aws --version
-      register: aws_version_check
-      ignore_errors: yes
+    - name: Save EKS token to a variable
+      set_fact:
+        eks_token: "{{ eks_token_json.stdout | from_json | json_query('status.token') }}"
 
-    - name: Display AWS CLI version
-      debug:
-        var: aws_version_check.stdout
-
-    - name: Test AWS credentials
-      command: aws sts get-caller-identity
-      register: aws_identity
-      ignore_errors: yes
-
-    - name: Show AWS identity
-      debug:
-        var: aws_identity.stdout
-
-    - name: Get EKS authentication token
-      command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1
-      register: eks_token_check
-      ignore_errors: yes
-
-    - name: Show EKS authentication token
-      debug:
-        var: eks_token_check.stdout
-
-    - name: Save kubeconfig to a temporary file
+    - name: Write kubeconfig with token
       copy:
-        content: "{{ kubeconfig_content }}"
-        dest: "/tmp/kubeconfig"
+        content: |
+          apiVersion: v1
+          clusters:
+          - cluster:
+              certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJek1EWXdPVEEzTWpneE5Wb1hEVE16TURZd05qQTNNamd4TlZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBSzg5CnU0OW1WNlVnQ2ZqTWpWcG81R3BIOFdUTWw2YStMSm40V0RGQTBwaDRIdVBvdlRqZkttZ0prZEYrM08xa21uZ2cKOTNGZ3JRRzVZWEdKMG0xRm1PS09MZTh2YWV5WkxKeWNsdFJ6MFJ0S3FPSzFpTDBRaldCOVpwcXpUVkFSM0NmKwo3MmhYd01zYytRWTdJRXB3WjlPb2w5bk95SmU0ejZCcXNDTVJmaVY2K211RmRFOVU5RXBzb1Q5bjVvNW5vTWk4CkNXWHVZTG9qUkVQY2VSSkJaUUFML2R5cUFTZ3Vvc2QwRTFGbmJ1QjBabm9hSVI2TE83ajREcXpyMnQxb1dQS3QKMXVwUDJhMzJXZURkSTVaMDlTUXZ2TnJhTkRFdEp5bS80WVNkdG1YeHl4ZGd6TUhWaC94Wm9ibkpSeFdXSmxpcQpOK0J6MExOTG4yMVpRamd0NlVVQ0F3RUFBYU5aTUZjd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZJT0EwemN6RGpuR2poZys2SDJSVlN3MDZzbndNQlVHQTFVZEVRUU8KTUF5Q0NtdDFZbVZ5Ym1WMFpYTXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBSkVzalBQWkR5QnBCRTlmN0lmYgo4ZmFhc1RyYzFHOWZGa1lDeCtZbldmRDNicTZQS05Ia0Zyb1RKb2t0bG42YTh0OFJ5WFV3akR3Qis1cTNHbDk2ClZVVjNla29FMWpXUk5SNjU1SDZTQXJhTUVIMFNDR1h3aXZ2cXo2K0VNQVlhVDROUUZzVXRNd2VRSC9GYTdhSmsKWjBZY2IwL0FVc3RQWit2aDRLVmtvRzMxaWJWZzlyNUc5YTFTc1RXWmNUeEd6ZFUzQ21YajJ6L1dDSy9nKzQ0Ywo2MXlJVTdiNDFTcVZtOWhPMElHR0R3aThqWGo0blRlcFk3TDVPelJicERvTElnRjJncGxxbVpyTXhua0laMnVLCmEyNEIzSGluRlVEN2wvYUxzOER5cDJ2ZHN2dTVmR1Bnc1FYenZyVzQxV3lQV3MvSHpaSUpuVHBtMGN1ejNTanoKelFZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+              server: https://3F640F54835FF2485DD92BE4B95CEECA.gr7.ap-southeast-1.eks.amazonaws.com
+            name: eks-cluster
+          contexts:
+          - context:
+              cluster: eks-cluster
+              user: eks-user
+            name: eks-context
+          current-context: eks-context
+          kind: Config
+          preferences: {}
+          users:
+          - name: eks-user
+            user:
+              token: "{{ eks_token }}"
+        dest: "/tmp/kubeconfig_with_token"
         mode: 0600
 
-    - name: Get Kubernetes Cluster Info
+    - name: Get Kubernetes Cluster Info with token-based kubeconfig
       kubernetes.core.k8s_cluster_info:
-        kubeconfig: "/tmp/kubeconfig"
+        kubeconfig: "/tmp/kubeconfig_with_token"
       register: cluster_info
 
     - name: Print the Kubernetes Cluster Info

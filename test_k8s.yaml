@@ -10,7 +10,7 @@
 
     - name: Save EKS token to a variable
       set_fact:
-        eks_token: "{{ eks_token_json.stdout | from_json | json_query('status.token') }}"
+        eks_token: "{{ (eks_token_json.stdout | from_json).status.token }}"
 
     - name: Write kubeconfig with token
       copy:

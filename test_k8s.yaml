@@ -7,9 +7,6 @@
     kubeconfig_content: "{{ KUBECONFIG_CONTENT }}"
 
   tasks:
-    - name: Print all environment variables
-      command: env
-
     - name: Debug KUBECONFIG_CONTENT variable
       debug:
         var: kubeconfig_content

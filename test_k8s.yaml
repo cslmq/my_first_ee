@@ -30,10 +30,12 @@
           preferences: {}
           users:
           - name: eks-user
-            # user:
-            #   token: "{{ EKS_TOKEN }}"
+            user: {}
         dest: "/tmp/kubeconfig_with_token"
         mode: 0600
+
+            # user:
+            #       token: "{{ EKS_TOKEN }}"
 
     # - name: Get Kubernetes Cluster Info with token-based kubeconfig
     #   kubernetes.core.k8s_cluster_info:

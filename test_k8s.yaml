@@ -19,7 +19,7 @@
 
     - name: Debug extracted token (Base64 URL Safe format)
       debug:
-        msg: "{{ token_base64 }}"
+        msg: "Extracted Token: {{ token_base64 }}"
 
     - name: Show token length
       debug:
@@ -27,7 +27,11 @@
 
     - name: Show token structure
       debug:
-        msg: "Token structure: {{ token_base64.split('.') }}"
+        msg: "Token parts: {{ token_base64.split('.') }}"
+
+    - name: Check token format directly
+      debug:
+        msg: "Token regex match: {{ token_base64 is match('^[^.]+\\.[^.]+\\.[^.]+$') }}"
 
     - name: Ensure token format is correct (JWT format)
       fail:
@@ -45,6 +49,11 @@
     - name: Decode JWT payload (Base64 URL Safe decoding)
       set_fact:
         token_payload_decoded: "{{ token_payload_padded | b64decode }}"
+
+    - name: Display decoded token payload to identify user
+      debug:
+        msg: "{{ token_payload_decoded }}"
+
 
     # - name: Generate EKS authentication token
     #   command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json

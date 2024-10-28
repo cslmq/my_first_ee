@@ -1,18 +1,8 @@
----
-- name: Retrieve and Print Kubernetes Cluster Information
+- name: Decode and Check EKS Token Payload
   hosts: localhost
   gather_facts: no
 
   tasks:
-    - name: Test AWS credentials
-      command: aws sts get-caller-identity
-      register: aws_identity
-      ignore_errors: yes
-
-    - name: Show AWS identity
-      debug:
-        var: aws_identity.stdout
-
     - name: Get EKS authentication token
       command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json
       register: eks_token_check
@@ -31,9 +21,14 @@
       debug:
         msg: "{{ token_base64 }}"
 
+    - name: Ensure token format is correct (JWT format)
+      fail:
+        msg: "The token format is invalid. Expected JWT format with three parts (header.payload.signature)."
+      when: token_base64 is not match("^[^.]+\\.[^.]+\\.[^.]+$")
+
     - name: Extract the JWT payload
       set_fact:
-        token_payload_base64: "{{ token_base64 | regex_search('\\.([^.]+)\\.') | first }}"
+        token_payload_base64: "{{ token_base64 | regex_search('\\.([^.]+)\\.') | first | default('') }}"
 
     - name: Ensure correct Base64 padding for token payload
       set_fact:
@@ -46,6 +41,7 @@
     - name: Display decoded token payload to identify user
       debug:
         msg: "{{ token_payload_decoded }}"
+
 
     # - name: Generate EKS authentication token
     #   command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json

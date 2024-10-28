@@ -21,6 +21,10 @@
       debug:
         msg: "{{ token_base64 }}"
 
+    - name: Validate token structure
+      debug:
+        msg: "Token parts: {{ token_base64.split('.') }}"
+
     - name: Ensure token format is correct (JWT format)
       fail:
         msg: "The token format is invalid. Expected JWT format with three parts (header.payload.signature)."
@@ -41,6 +45,7 @@
     - name: Display decoded token payload to identify user
       debug:
         msg: "{{ token_payload_decoded }}"
+
 
 
     # - name: Generate EKS authentication token

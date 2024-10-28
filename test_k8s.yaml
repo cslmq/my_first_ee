@@ -35,11 +35,23 @@
         dest: "/tmp/kubeconfig_with_token"
         mode: 0600
 
-    - name: Get Kubernetes Cluster Info with token-based kubeconfig
-      kubernetes.core.k8s_cluster_info:
-        kubeconfig: "/tmp/kubeconfig_with_token"
-      register: cluster_info
+    # - name: Get Kubernetes Cluster Info with token-based kubeconfig
+    #   kubernetes.core.k8s_cluster_info:
+    #     kubeconfig: "/tmp/kubeconfig_with_token"
+    #   register: cluster_info
 
-    - name: Print the Kubernetes Cluster Info
+    # - name: Print the Kubernetes Cluster Info
+    #   debug:
+    #     var: cluster_info
+
+    - name: Get pods in monitoring namespace
+      k8s_info:
+        kubeconfig: "/tmp/kubeconfig_with_token"
+        namespace: monitoring
+        kind: Pod
+      register: pods_info
+
+    - name: Print pod names
       debug:
-        var: cluster_info
+        msg: "{{ item.metadata.name }}"
+      loop: "{{ pods_info.resources }}"

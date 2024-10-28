@@ -1,5 +1,5 @@
 ---
-- name: Decode and Check EKS Token Payload
+- name: Retrieve and Print Kubernetes Cluster Information
   hosts: localhost
   gather_facts: no
 
@@ -13,18 +13,17 @@
       debug:
         var: aws_identity.stdout
 
-    - name: Get EKS authentication token
-      command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1
-      register: eks_token_check
-      ignore_errors: yes
-
-    - name: Extract the JWT payload
+    - name: Extract the JWT payload (Base64 URL Safe format)
       set_fact:
         token_payload_base64: "{{ eks_token_check.stdout | regex_search('\\.([^.]+)\\.')[0] }}"
 
-    - name: Decode JWT payload (Base64)
+    - name: Ensure correct Base64 padding for token payload
       set_fact:
-        token_payload_decoded: "{{ token_payload_base64 | b64decode }}"
+        token_payload_padded: "{{ token_payload_base64 + '=' * (4 - (token_payload_base64 | length) % 4) if (token_payload_base64 | length) % 4 != 0 else token_payload_base64 }}"
+
+    - name: Decode JWT payload (Base64 URL Safe decoding)
+      set_fact:
+        token_payload_decoded: "{{ token_payload_padded | b64decode }}"
 
     - name: Display decoded token payload to identify user
       debug:

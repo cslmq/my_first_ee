@@ -1,10 +1,9 @@
 ---
-- name: Retrieve and Print Kubernetes Cluster Information
+- name: Decode and Check EKS Token Payload
   hosts: localhost
   gather_facts: no
 
   tasks:
-
     - name: Test AWS credentials
       command: aws sts get-caller-identity
       register: aws_identity
@@ -19,9 +18,14 @@
       register: eks_token_check
       ignore_errors: yes
 
-    - name: Show EKS authentication token
+    - name: Decode JWT token (Base64 decode)
+      set_fact:
+        token_payload: "{{ eks_token_check.stdout | regex_replace('^.*\\.([^.]+)\\..*$', '\\1') | b64decode }}"
+
+    - name: Display token payload to identify user
       debug:
-        var: eks_token_check.stdout
+        msg: "{{ token_payload }}"
+
 
     # - name: Generate EKS authentication token
     #   command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json

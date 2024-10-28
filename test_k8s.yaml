@@ -18,30 +18,26 @@
       register: eks_token_check
       ignore_errors: yes
 
-    - name: Debug EKS token output
-      debug:
-        msg: "{{ eks_token_check.stdout }}"
-
     - name: Check if eks_token_check has valid output
       fail:
         msg: "Failed to retrieve EKS token. Check AWS credentials and permissions."
       when: eks_token_check is not defined or eks_token_check.stdout == ""
 
-    - name: Extract the JWT payload (Base64 URL Safe format)
+    - name: Extract the token from JSON output
       set_fact:
-        token_payload_base64: "{{ (eks_token_check.stdout | regex_search('\\.([^.]+)\\.')) | first }}"
+        token_base64: "{{ eks_token_check.stdout | from_json | json_query('status.token') }}"
 
-    - name: Debug extracted token payload (Base64)
+    - name: Debug extracted token (Base64 URL Safe format)
       debug:
-        msg: "{{ token_payload_base64 }}"
+        msg: "{{ token_base64 }}"
+
+    - name: Extract the JWT payload
+      set_fact:
+        token_payload_base64: "{{ token_base64 | regex_search('\\.([^.]+)\\.')[0] }}"
 
     - name: Ensure correct Base64 padding for token payload
       set_fact:
         token_payload_padded: "{{ token_payload_base64 + '=' * (4 - (token_payload_base64 | length) % 4) if (token_payload_base64 | length) % 4 != 0 else token_payload_base64 }}"
-
-    - name: Debug padded token payload (Base64)
-      debug:
-        msg: "{{ token_payload_padded }}"
 
     - name: Decode JWT payload (Base64 URL Safe decoding)
       set_fact:

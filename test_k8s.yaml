@@ -1,60 +1,8 @@
-- name: Decode and Check EKS Token Payload
+- name: Retrieve cluster info
   hosts: localhost
   gather_facts: no
 
   tasks:
-    - name: Get EKS authentication token
-      command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json
-      register: eks_token_check
-      ignore_errors: yes
-
-    - name: Check if eks_token_check has valid output
-      fail:
-        msg: "Failed to retrieve EKS token. Check AWS credentials and permissions."
-      when: eks_token_check is not defined or eks_token_check.stdout == ""
-
-    - name: Parse JSON and extract token
-      set_fact:
-        token_base64: "{{ (eks_token_check.stdout | from_json).status.token }}"
-
-    - name: Debug extracted token (Base64 URL Safe format)
-      debug:
-        msg: "Extracted Token: {{ token_base64 }}"
-
-    - name: Show token length
-      debug:
-        msg: "Token length: {{ token_base64 | length }}"
-
-    - name: Show token structure
-      debug:
-        msg: "Token parts: {{ token_base64.split('.') }}"
-
-    - name: Check token format directly
-      debug:
-        msg: "Token regex match: {{ token_base64 is match('^[^.]+\\.[^.]+\\.[^.]+$') }}"
-
-    - name: Ensure token format is correct (JWT format)
-      fail:
-        msg: "The token format is invalid. Expected JWT format with three parts (header.payload.signature)."
-      when: token_base64 is not match("^[^.]+\\.[^.]+\\.[^.]+$")
-
-    - name: Extract the JWT payload
-      set_fact:
-        token_payload_base64: "{{ token_base64 | regex_search('\\.([^.]+)\\.') | first | default('') }}"
-
-    - name: Ensure correct Base64 padding for token payload
-      set_fact:
-        token_payload_padded: "{{ token_payload_base64 + '=' * (4 - (token_payload_base64 | length) % 4) if (token_payload_base64 | length) % 4 != 0 else token_payload_base64 }}"
-
-    - name: Decode JWT payload (Base64 URL Safe decoding)
-      set_fact:
-        token_payload_decoded: "{{ token_payload_padded | b64decode }}"
-
-    - name: Display decoded token payload to identify user
-      debug:
-        msg: "{{ token_payload_decoded }}"
-
-
     # - name: Generate EKS authentication token
     #   command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json
     #   register: eks_token_json
@@ -63,35 +11,35 @@
     #   set_fact:
     #     eks_token: "{{ (eks_token_json.stdout | from_json).status.token }}"
 
-    # - name: Write kubeconfig with token
-    #   copy:
-    #     content: |
-    #       apiVersion: v1
-    #       clusters:
-    #       - cluster:
-    #           certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJek1EWXdPVEEzTWpneE5Wb1hEVE16TURZd05qQTNNamd4TlZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBSzg5CnU0OW1WNlVnQ2ZqTWpWcG81R3BIOFdUTWw2YStMSm40V0RGQTBwaDRIdVBvdlRqZkttZ0prZEYrM08xa21uZ2cKOTNGZ3JRRzVZWEdKMG0xRm1PS09MZTh2YWV5WkxKeWNsdFJ6MFJ0S3FPSzFpTDBRaldCOVpwcXpUVkFSM0NmKwo3MmhYd01zYytRWTdJRXB3WjlPb2w5bk95SmU0ejZCcXNDTVJmaVY2K211RmRFOVU5RXBzb1Q5bjVvNW5vTWk4CkNXWHVZTG9qUkVQY2VSSkJaUUFML2R5cUFTZ3Vvc2QwRTFGbmJ1QjBabm9hSVI2TE83ajREcXpyMnQxb1dQS3QKMXVwUDJhMzJXZURkSTVaMDlTUXZ2TnJhTkRFdEp5bS80WVNkdG1YeHl4ZGd6TUhWaC94Wm9ibkpSeFdXSmxpcQpOK0J6MExOTG4yMVpRamd0NlVVQ0F3RUFBYU5aTUZjd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZJT0EwemN6RGpuR2poZys2SDJSVlN3MDZzbndNQlVHQTFVZEVRUU8KTUF5Q0NtdDFZbVZ5Ym1WMFpYTXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBSkVzalBQWkR5QnBCRTlmN0lmYgo4ZmFhc1RyYzFHOWZGa1lDeCtZbldmRDNicTZQS05Ia0Zyb1RKb2t0bG42YTh0OFJ5WFV3akR3Qis1cTNHbDk2ClZVVjNla29FMWpXUk5SNjU1SDZTQXJhTUVIMFNDR1h3aXZ2cXo2K0VNQVlhVDROUUZzVXRNd2VRSC9GYTdhSmsKWjBZY2IwL0FVc3RQWit2aDRLVmtvRzMxaWJWZzlyNUc5YTFTc1RXWmNUeEd6ZFUzQ21YajJ6L1dDSy9nKzQ0Ywo2MXlJVTdiNDFTcVZtOWhPMElHR0R3aThqWGo0blRlcFk3TDVPelJicERvTElnRjJncGxxbVpyTXhua0laMnVLCmEyNEIzSGluRlVEN2wvYUxzOER5cDJ2ZHN2dTVmR1Bnc1FYenZyVzQxV3lQV3MvSHpaSUpuVHBtMGN1ejNTanoKelFZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
-    #           server: https://3F640F54835FF2485DD92BE4B95CEECA.gr7.ap-southeast-1.eks.amazonaws.com
-    #         name: eks-cluster
-    #       contexts:
-    #       - context:
-    #           cluster: eks-cluster
-    #           user: eks-user
-    #         name: eks-context
-    #       current-context: eks-context
-    #       kind: Config
-    #       preferences: {}
-    #       users:
-    #       - name: eks-user
-    #         user:
-    #           token: "{{ eks_token }}"
-    #     dest: "/tmp/kubeconfig_with_token"
-    #     mode: 0600
+    - name: Write kubeconfig with token
+      copy:
+        content: |
+          apiVersion: v1
+          clusters:
+          - cluster:
+              certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJek1EWXdPVEEzTWpneE5Wb1hEVE16TURZd05qQTNNamd4TlZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBSzg5CnU0OW1WNlVnQ2ZqTWpWcG81R3BIOFdUTWw2YStMSm40V0RGQTBwaDRIdVBvdlRqZkttZ0prZEYrM08xa21uZ2cKOTNGZ3JRRzVZWEdKMG0xRm1PS09MZTh2YWV5WkxKeWNsdFJ6MFJ0S3FPSzFpTDBRaldCOVpwcXpUVkFSM0NmKwo3MmhYd01zYytRWTdJRXB3WjlPb2w5bk95SmU0ejZCcXNDTVJmaVY2K211RmRFOVU5RXBzb1Q5bjVvNW5vTWk4CkNXWHVZTG9qUkVQY2VSSkJaUUFML2R5cUFTZ3Vvc2QwRTFGbmJ1QjBabm9hSVI2TE83ajREcXpyMnQxb1dQS3QKMXVwUDJhMzJXZURkSTVaMDlTUXZ2TnJhTkRFdEp5bS80WVNkdG1YeHl4ZGd6TUhWaC94Wm9ibkpSeFdXSmxpcQpOK0J6MExOTG4yMVpRamd0NlVVQ0F3RUFBYU5aTUZjd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZJT0EwemN6RGpuR2poZys2SDJSVlN3MDZzbndNQlVHQTFVZEVRUU8KTUF5Q0NtdDFZbVZ5Ym1WMFpYTXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBSkVzalBQWkR5QnBCRTlmN0lmYgo4ZmFhc1RyYzFHOWZGa1lDeCtZbldmRDNicTZQS05Ia0Zyb1RKb2t0bG42YTh0OFJ5WFV3akR3Qis1cTNHbDk2ClZVVjNla29FMWpXUk5SNjU1SDZTQXJhTUVIMFNDR1h3aXZ2cXo2K0VNQVlhVDROUUZzVXRNd2VRSC9GYTdhSmsKWjBZY2IwL0FVc3RQWit2aDRLVmtvRzMxaWJWZzlyNUc5YTFTc1RXWmNUeEd6ZFUzQ21YajJ6L1dDSy9nKzQ0Ywo2MXlJVTdiNDFTcVZtOWhPMElHR0R3aThqWGo0blRlcFk3TDVPelJicERvTElnRjJncGxxbVpyTXhua0laMnVLCmEyNEIzSGluRlVEN2wvYUxzOER5cDJ2ZHN2dTVmR1Bnc1FYenZyVzQxV3lQV3MvSHpaSUpuVHBtMGN1ejNTanoKelFZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+              server: https://3F640F54835FF2485DD92BE4B95CEECA.gr7.ap-southeast-1.eks.amazonaws.com
+            name: eks-cluster
+          contexts:
+          - context:
+              cluster: eks-cluster
+              user: eks-user
+            name: eks-context
+          current-context: eks-context
+          kind: Config
+          preferences: {}
+          users:
+          - name: eks-user
+            user:
+              token: "{{ EKS_TOKEN }}"
+        dest: "/tmp/kubeconfig_with_token"
+        mode: 0600
 
-    # - name: Get Kubernetes Cluster Info with token-based kubeconfig
-    #   kubernetes.core.k8s_cluster_info:
-    #     kubeconfig: "/tmp/kubeconfig_with_token"
-    #   register: cluster_info
+    - name: Get Kubernetes Cluster Info with token-based kubeconfig
+      kubernetes.core.k8s_cluster_info:
+        kubeconfig: "/tmp/kubeconfig_with_token"
+      register: cluster_info
 
-    # - name: Print the Kubernetes Cluster Info
-    #   debug:
-    #     var: cluster_info
+    - name: Print the Kubernetes Cluster Info
+      debug:
+        var: cluster_info

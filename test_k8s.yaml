@@ -30,8 +30,8 @@
           preferences: {}
           users:
           - name: eks-user
-            user:
-              token: "{{ EKS_TOKEN }}"
+            # user:
+            #   token: "{{ EKS_TOKEN }}"
         dest: "/tmp/kubeconfig_with_token"
         mode: 0600
 
@@ -47,6 +47,7 @@
     - name: Get pods in monitoring namespace
       kubernetes.core.k8s_info:
         kubeconfig: "/tmp/kubeconfig_with_token"
+        api_key: "{{ EKS_TOKEN }}"
         namespace: monitoring
         kind: Pod
       register: pods_info

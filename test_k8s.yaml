@@ -3,13 +3,13 @@
   gather_facts: no
 
   tasks:
-    # - name: Generate EKS authentication token
-    #   command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json
-    #   register: eks_token_json
+    - name: Generate EKS authentication token
+      command: aws eks get-token --cluster-name sandbox-devops --region ap-southeast-1 --output json
+      register: eks_token_json
 
-    # - name: Save EKS token to a variable
-    #   set_fact:
-    #     eks_token: "{{ (eks_token_json.stdout | from_json).status.token }}"
+    - name: Save EKS token to a variable
+      set_fact:
+        eks_token: "{{ (eks_token_json.stdout | from_json).status.token }}"
 
     - name: Write kubeconfig with token
       copy:
@@ -49,7 +49,8 @@
     - name: Get pods in monitoring namespace
       kubernetes.core.k8s_info:
         kubeconfig: "/tmp/kubeconfig_with_token"
-        api_key: "{{ EKS_TOKEN }}"
+        # api_key: "{{ EKS_TOKEN }}"
+        api_key: "{{ eks_token }}"
         namespace: monitoring
         kind: Pod
       register: pods_info

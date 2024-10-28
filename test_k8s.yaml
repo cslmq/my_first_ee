@@ -15,7 +15,7 @@
 
     - name: Extract the JWT payload (Base64 URL Safe format)
       set_fact:
-        token_payload_base64: "{{ eks_token_check.stdout | regex_search('\\.([^.]+)\\.')[0] }}"
+        token_payload_base64: "{{ (eks_token_check.stdout | regex_search('\\.([^.]+)\\.')) | first }}"
 
     - name: Ensure correct Base64 padding for token payload
       set_fact:

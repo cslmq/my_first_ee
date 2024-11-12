@@ -1,8 +1,7 @@
----
 - hosts: all
   become: yes
   vars:
-    receptor_host: "{{ ansible_host }}"
+    receptor_target_host: "{{ ansible_host }}"
   tasks:
     - name: Create the receptor user
       user:
@@ -11,8 +10,8 @@
     - import_role:
         name: ansible.receptor.podman
       vars:
-        ansible_host: "{{ receptor_host }}"
+        receptor_host: "{{ receptor_target_host }}"
     - import_role:
         name: ansible.receptor.setup
       vars:
-        ansible_host: "{{ receptor_host }}"
+        receptor_host: "{{ receptor_target_host }}"

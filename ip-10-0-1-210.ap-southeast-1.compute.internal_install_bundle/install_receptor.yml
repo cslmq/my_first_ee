@@ -1,15 +1,18 @@
 ---
 - hosts: all
   become: yes
+  vars:
+    receptor_host: "{{ ansible_host }}"
   tasks:
-    - name: Display ansible_host
-      debug:
-        msg: "{{ ansible_host }}"
     - name: Create the receptor user
       user:
         name: "{{ receptor_user }}"
         shell: /bin/bash
     - import_role:
         name: ansible.receptor.podman
+      vars:
+        ansible_host: "{{ receptor_host }}"
     - import_role:
         name: ansible.receptor.setup
+      vars:
+        ansible_host: "{{ receptor_host }}"

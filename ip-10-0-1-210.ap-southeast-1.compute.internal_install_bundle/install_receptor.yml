@@ -2,6 +2,10 @@
 - hosts: all
   become: yes
   tasks:
+    tasks:
+    - name: Display ansible_host
+      debug:
+        msg: "{{ ansible_host }}"
     - name: Create the receptor user
       user:
         name: "{{ receptor_user }}"

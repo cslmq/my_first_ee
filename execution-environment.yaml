@@ -2,7 +2,7 @@ version: 3
 
 images:
   base_image:
-    name: quay.io/fedora/fedora:latest
+    name: registry.fedoraproject.org/fedora:38
 
 dependencies:
   ansible_core:
@@ -13,7 +13,9 @@ dependencies:
     - openssh-clients
     - sshpass
     - awscli
+    - openssl
   galaxy:
     collections:
       - name: amazon.aws
-      - name: kubenetes.core
+      - name: kubernetes.core
+      - name: ansible.receptor

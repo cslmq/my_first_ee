@@ -3,30 +3,10 @@
   gather_facts: no
 
   vars:
-    aws_role_arn: "arn:aws:iam::782402661469:role/awx-eks-role"
-    aws_region: "ap-northeast-1"
-    cluster_name: "bridge-nonprod"
+    aws_region: "ap-southeast-1"
+    cluster_name: "sandbox-devops"
 
   tasks:
-    - name: Assume AWX EKS Role
-      command: >
-        aws sts assume-role --role-arn {{ aws_role_arn }} --role-session-name "awx-session"
-      register: sts_credentials_json
-
-    - name: Extract Temporary Credentials
-      set_fact:
-        aws_access_key: "{{ (sts_credentials_json.stdout | from_json).Credentials.AccessKeyId }}"
-        aws_secret_key: "{{ (sts_credentials_json.stdout | from_json).Credentials.SecretAccessKey }}"
-        aws_session_token: "{{ (sts_credentials_json.stdout | from_json).Credentials.SessionToken }}"
-
-    - name: Configure AWS CLI with temporary credentials
-      set_fact:
-        aws_env:
-          AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-          AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-          AWS_SESSION_TOKEN: "{{ aws_session_token }}"
-          AWS_DEFAULT_REGION: "{{ aws_region }}"
-
     - name: Generate EKS authentication token
       command: aws eks get-token --cluster-name {{ cluster_name }} --region {{ aws_region }} --output json
       environment: "{{ aws_env }}"

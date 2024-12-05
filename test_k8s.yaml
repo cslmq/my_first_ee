@@ -7,6 +7,10 @@
     cluster_name: "sandbox-devops"
 
   tasks:
+    - name: Print kubeconfig content from environment variable
+      debug:
+        msg: "{{ lookup('env', 'kubeconfig') }}"
+
     - name: Generate EKS authentication token
       command: aws eks get-token --cluster-name {{ cluster_name }} --region {{ aws_region }} --output json
       register: eks_token_json

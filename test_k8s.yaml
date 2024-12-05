@@ -11,10 +11,6 @@
       debug:
         msg: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') }}"
 
-    - name: Print the KUBECONFIG variable
-      debug:
-        var: lookup('env', 'KUBECONFIG')
-
     - name: Generate EKS authentication token
       command: aws eks get-token --cluster-name {{ cluster_name }} --region {{ aws_region }} --output json
       register: eks_token_json

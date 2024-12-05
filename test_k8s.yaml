@@ -7,14 +7,6 @@
     cluster_name: "sandbox-devops"
 
   tasks:
-    - name: List files in /tmp
-      shell: ls -l /tmp
-      register: tmp_files
-
-    - name: Show /tmp files
-      debug:
-        var: tmp_files.stdout_lines
-
     - name: Print the KUBECONFIG variable
       debug:
         var: lookup('env', 'KUBECONFIG')

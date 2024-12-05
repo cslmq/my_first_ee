@@ -7,6 +7,10 @@
     cluster_name: "sandbox-devops"
 
   tasks:
+    - name: Print the Kubernetes config path
+      debug:
+        msg: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') }}"
+
     - name: Print the KUBECONFIG variable
       debug:
         var: lookup('env', 'KUBECONFIG')

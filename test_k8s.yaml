@@ -11,9 +11,9 @@
       command: aws eks get-token --cluster-name {{ cluster_name }} --region {{ aws_region }} --output json
       register: eks_token_json
 
-    # - name: Save EKS token to a variable
-    #   set_fact:
-    #     eks_token: "{{ (eks_token_json.stdout | from_json).status.token }}"
+    - name: Save EKS token to a variable
+      set_fact:
+        eks_token: "{{ (eks_token_json.stdout | from_json).status.token }}"
 
     # - name: Write kubeconfig to a file
     #   copy:

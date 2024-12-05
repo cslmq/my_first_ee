@@ -15,14 +15,6 @@
       debug:
         var: lookup('env', 'KUBECONFIG')
 
-    - name: Print all environment variables (optional)
-      shell: printenv
-      register: env_output
-
-    - name: Display all environment variables
-      debug:
-        var: env_output.stdout_lines
-
     - name: Generate EKS authentication token
       command: aws eks get-token --cluster-name {{ cluster_name }} --region {{ aws_region }} --output json
       register: eks_token_json

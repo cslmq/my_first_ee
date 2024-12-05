@@ -1,0 +1,21 @@
+version: 3
+
+images:
+  base_image:
+    name: registry.fedoraproject.org/fedora:38
+
+dependencies:
+  ansible_core:
+    package_pip: ansible-core
+  ansible_runner:
+    package_pip: ansible-runner
+  system:
+    - openssh-clients
+    - sshpass
+    - awscli
+    - openssl
+  galaxy:
+    collections:
+      - name: amazon.aws
+      - name: kubernetes.core
+      - name: ansible.receptor

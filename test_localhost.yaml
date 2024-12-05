@@ -1,0 +1,19 @@
+- name: Hello World Sample
+  hosts: localhost
+
+  tasks:
+    - name: Get current user
+      command: whoami
+      register: whoami_output
+
+    - name: Print whoami output
+      debug:
+        msg: "Current user is: {{ whoami_output.stdout }}"
+
+    - name: Hello Message
+      debug:
+        msg: "Hello World!"
+
+    - name: Sleep for 1 minute
+      pause:
+        seconds: 60

@@ -1,0 +1,17 @@
+---
+- name: List S3 Buckets with Pre-Attached IAM Role
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    s3_region: "ap-southeast-1" # Update with your region
+
+  tasks:
+    - name: List all S3 buckets
+      amazon.aws.aws_s3_bucket_info:
+        region: "{{ s3_region }}"
+      register: s3_buckets
+
+    - name: Print the S3 bucket list
+      debug:
+        msg: "{{ s3_buckets.buckets }}"

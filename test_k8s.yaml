@@ -9,7 +9,6 @@
   tasks:
     - name: Generate EKS authentication token
       command: aws eks get-token --cluster-name {{ cluster_name }} --region {{ aws_region }} --output json
-      environment: "{{ aws_env }}"
       register: eks_token_json
 
     - name: Save EKS token to a variable
